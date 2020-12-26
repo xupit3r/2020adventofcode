@@ -40,4 +40,14 @@ function findSeat (pass) {
 
 const results = passes.map(findSeat).sort((a, b) => b.seatId - a.seatId);
 
-console.log(`highest seat id is ${results[0].seatId}`);
+const filled = new Array(results[0].seatId + 1).fill(false);
+
+results.forEach(result => {
+  filled[result.seatId] = true;
+});
+
+filled.forEach((flag, idx) => {
+  if (!flag) {
+    console.log(`no boarding pass for seat ${idx}`);
+  }
+});
