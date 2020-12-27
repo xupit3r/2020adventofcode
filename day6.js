@@ -7,11 +7,23 @@ const CUSTOMS_DATAFILE = './data/day6.txt';
 function countResponses (group) {
   let answers = group.reduce((h1, person) => {
     return person.split('').reduce((h2, a) => {
-      return h2[a] = true, h2;
+      if (!h2[a]) {
+        h2[a] = 0;
+      }
+
+      h2[a]++;
+
+      return h2;
     }, h1);
   }, {});
 
-  return Object.keys(answers).length;
+  // only answers that are valid are the ones for
+  // which everyone answered "yes"
+  let valids = Object.keys(answers).filter(key => {
+    return answers[key] === group.length;
+  })
+
+  return Object.keys(valids).length;
 }
 
 fs.readFile(CUSTOMS_DATAFILE, 'utf-8', (err, lines) => {
