@@ -17,11 +17,12 @@ function parseLine (str, idx) {
 
 function getProgram (str) {
   return {
-    running: false,
     line: 0,
     accumulator: 0,
-    visited: {},
-    instructions: str.split('\n').map(parseLine),
+    executed: {},
+    instructions: str.trim().split('\n').map(parseLine),
+    mutated: [],
+    mutatedLine: 0,
     commands: {
       nop () {
         this.line = this.line + 1;
@@ -34,28 +35,66 @@ function getProgram (str) {
         this.line = this.line + amount;
       }
     },
+    reset () {
+      this.line = 0;
+      this.accumulator = 0;
+      this.executed = {};
+    },
     getAccumulator () {
       return this.accumulator;
     },
-    getNextInstruction () {
-      return this.instructions[this.line]
+    getNextInstruction (useMutate) {
+      if (useMutate) {
+        return this.mutated[this.line];
+      } else {
+        return this.instructions[this.line];
+      }
+    },
+    mutate () {
+      let found = false;
+
+      this.reset();
+
+      this.mutated = this.instructions.slice().map((ins, idx) => {
+        let cmd = ins.command;
+
+        if ((ins.command === 'nop' || ins.command === 'jmp') &&
+            idx > this.mutatedLine &&
+            !found) {
+          found = true;
+          this.mutatedLine = idx;
+
+          return {
+            ...ins,
+            command: (ins.command === 'nop'
+              ? 'jmp'
+              : 'nop'
+            )
+          };
+        } else {
+          return ins;
+        }
+      });
     },
     exec (instruction) {
       // run the command
       this.commands[instruction.command].apply(this, instruction.args);
 
-      // mark the command as visited
-      this.visited[instruction.lineNumber] = true;
+      // mark the command as executed
+      this.executed[instruction.lineNumber] = true;
     },
-    shouldContinue () {
-      return !this.visited[this.line];
+    hasNextInstruction () {
+      return !!this.getNextInstruction();
     },
-    run () {
+    alreadyExecuted () {
+      return this.executed[this.line];
+    },
+    run (useMutate) {
       // return console.log(this.instructions);
-      while (this.shouldContinue()) {
-        let instruction = this.getNextInstruction();
+      while (this.hasNextInstruction() && !this.alreadyExecuted()) {
+        let instruction = this.getNextInstruction(useMutate);
 
-        console.log(instruction.str);
+        console.log(`${instruction.lineNumber}. ${instruction.str}`);
         this.exec(instruction);
       }
     }
@@ -69,7 +108,10 @@ fs.readFile(BOOT_CODE, 'utf-8', (err, str) => {
 
   let program = getProgram(str);
 
-  program.run();
+  while (program.hasNextInstruction()) {
+    program.mutate();
+    program.run(true);
+  }
 
-  console.log(program.getAccumulator());
+  console.log(`FINAL accumulator value ${program.getAccumulator()}`);
 });
