@@ -79,7 +79,6 @@ fs.readFile(BAG_RULES, 'utf-8', (err, str) => {
   // don't include the shiny gold bag...
   let numberOfBags = sumBags(lookup[SHINY_GOLD]) - 1;
 
-  console.log(lookup[SHINY_GOLD]);
   console.log(`there are ${containsShinyGold.length} bags.`);
   console.log(`shiny gold bags must contain ${numberOfBags} bags`);
 });
