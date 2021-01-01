@@ -59,6 +59,16 @@ fs.readFile(BAG_RULES, 'utf-8', (err, str) => {
     }, false);
   }
 
+  function sumBags (bag, sum = 0) {
+    if (!bag.contains.length) {
+      return 1;
+    }
+
+    return 1 + bag.contains.reduce((s, b) => {
+      return s + (b.quantity * sumBags(lookup[b.type]));
+    }, sum);
+  }
+
   let containsShinyGold = Object.values(lookup).map(bag => {
     return {
       type: bag.type,
@@ -66,5 +76,10 @@ fs.readFile(BAG_RULES, 'utf-8', (err, str) => {
     }
   }).filter(bag => bag.canContain);
 
+  // don't include the shiny gold bag...
+  let numberOfBags = sumBags(lookup[SHINY_GOLD]) - 1;
+
+  console.log(lookup[SHINY_GOLD]);
   console.log(`there are ${containsShinyGold.length} bags.`);
+  console.log(`shiny gold bags must contain ${numberOfBags} bags`);
 });
