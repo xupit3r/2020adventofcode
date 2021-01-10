@@ -21,6 +21,35 @@ function hasPair (num, previous) {
   return found;
 }
 
+function findWeakness (num, list) {
+  let found = false;
+  let group = [];
+
+  for (let i = 0; i < list.length && !found; i++) {
+    let sum = list[i];
+    let j = i + 1;
+
+    group = [ list[i] ];
+
+    while (sum < num && !found) {
+      sum += list[j];
+      group.push(list[j]);
+
+      if (sum === num) {
+        found = true;
+      }
+
+      j++;
+    }
+  }
+
+  let sorted = group.sort();
+  let first = sorted[0];
+  let last = sorted[sorted.length - 1];
+
+  return first + last;
+}
+
 let found = false;
 let value = -1;
 for (let i = PREAMBLE_SIZE; i < input.length && !found; i++) {
@@ -36,4 +65,7 @@ for (let i = PREAMBLE_SIZE; i < input.length && !found; i++) {
   }
 }
 
+let weakness = findWeakness(value, input);
+
 console.log(`number is ${value}`);
+console.log(`weakness is ${weakness}`);
